@@ -1,0 +1,23 @@
+{
+  "train_device": "cuda",
+  "observation_space": "36",
+  "a_space": "14",
+  "eval_mode": "False",
+  "agent_action_batch_size": "1",
+  "batch_size": "512",
+  "memory_size_before_training": "80000",
+  "update_iterations": "2",
+  "gamma": "0.96",
+  "arg_max_chance": "1",
+  "history_length": "30",
+  "policy": "RecurrentDuelingBypass",
+  "target_net": "RecurrentDuelingBypass",
+  "optimizer": "adam",
+  "update_target_net_intervall": "50000",
+  "update_policy_interval": "1",
+  "current_target_net_value": "0",
+  "current_update_policy_value": "0",
+  "state_train_shape": "(512, 30, 36)",
+  "agent_name": "BypassTuning",
+  "current_model_folder": "E:\\Visual Studio Workspace\\Eget\\Spiderman\\Agents\\QAgents\\StateAgents\\Models\\BypassTuning"
+}
