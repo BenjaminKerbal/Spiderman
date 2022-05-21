@@ -1,7 +1,7 @@
 
 import random
 
-from collections import namedtuple
+from collections import namedtuple, deque
 import numpy as np
 import pandas as pd
 import torch
@@ -10,52 +10,20 @@ from os.path import join
 Transition = namedtuple('Transition', ('state', 'next_state', 'actions', 'rewards', 'dones'))
 
 class ReplayMemory(object):
-    def __init__(self, capacity, prioritize_recent=False):
+    def __init__(self, capacity):
         self.capacity = capacity
-        self.prioritize_recent = prioritize_recent
-        self.memory = []
-        self.position = 0
-
-    def __prioritize_recent_sampling(self, batch_size):
-        if len(self.memory) < 8 * batch_size or self.position < len(self.memory) < 8:
-            return random.sample(self.memory, batch_size)
-        
-        recent_batch_size = batch_size // 4
-        old_batch_size = batch_size - recent_batch_size
-        if self.position < recent_batch_size*8:
-            recent_remaining = recent_batch_size*8 - self.position
-            recent_samples = self.memory[:self.position] + self.memory[-recent_remaining:]
-            older_samples = self.memory[self.position:-recent_remaining]
-        else:
-            recent_start = self.position - recent_batch_size*8
-            recent_samples = self.memory[recent_start:self.position]
-            older_samples = self.memory[:recent_start] + self.memory[self.position:]
-        sample_recent = random.sample(recent_samples, recent_batch_size)
-        sample_old = random.sample(older_samples, old_batch_size)
-        return sample_old + sample_recent
-
-    def __even_sampling(self, batch_size):
-        if len(self.memory) < batch_size:
-            return
-        return random.sample(self.memory, batch_size)
-
+        self.memory = deque(maxlen=capacity)
 
     def push(self, *args):
-        """Saves a transition."""
-        if len(self.memory) < self.capacity:
-            self.memory.append(None)
-        self.memory[self.position] = Transition(*args)
-        self.position = (self.position + 1) % self.capacity
+        self.memory.append(Transition(*args))
 
     def sample(self, batch_size):
-        if self.prioritize_recent:
-            return self.__prioritize_recent_sampling(batch_size)
-        else:
-            return self.__even_sampling(batch_size)
+        if len(self.memory) < batch_size:
+            return random.sample(self.memory, len(self.memory))
+        return random.sample(self.memory, batch_size)
 
     def __len__(self):
         return len(self.memory)
-
 
     def get_header_names(self, state_space_grid, state_space_pos):
         headerNames = ['state_grid_' + str(i+1) for i in range(state_space_grid)]
